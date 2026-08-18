@@ -1,149 +1,156 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, PointerEvent as ReactPointerEvent, useRef, useState } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const WA = "https://wa.me/?text=";
-const wa = (message: string) => WA + encodeURIComponent(message);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const services = [
-  ["01", "AI-powered digital marketing", "Strategy, content systems and campaign workflows shaped by AI-assisted research and human judgement.", "Campaign planning · Content roadmap · Optimisation"],
-  ["02", "Website design & development", "Modern, responsive websites built around positioning, user experience, credibility and clear conversion pathways.", "UX direction · Responsive build · Launch support"],
-  ["03", "AI creative services", "Creative concepts, visual development, scripts and campaign assets produced through considered AI-assisted workflows.", "Concepting · Visual systems · Production support"],
-  ["04", "Website redesign & optimisation", "A strategic overhaul for dated websites: clearer structure, stronger messaging, better mobile experiences and journeys.", "UX audit · Redesign · Conversion pathways"],
-  ["05", "YouTube growth services", "Channel positioning, content strategy, titles, thumbnails, scripts and optimisation built to support steady audience development.", "Channel strategy · Packaging · Optimisation"],
-  ["06", "Digital brand systems", "A connected identity across your website, social presence, campaign materials and ongoing content channels.", "Brand direction · Digital toolkit · Guidelines"],
+const whatsAppNumber = "6589950821";
+const whatsApp = (message: string) => `https://wa.me/${whatsAppNumber}?text=${encodeURIComponent(message)}`;
+const instagramPortfolio = "https://www.instagram.com/altivonsg?utm_source=qr";
+const personalInstagram = "https://www.instagram.com/k4.yden/";
+
+const capabilities = [
+  ["01", "Digital experiences", "Websites and interfaces shaped around positioning, usability and a clear path to conversation.", "Strategy · UX direction · Responsive development"],
+  ["02", "AI creative direction", "Human-led visual concepts and content workflows accelerated by practical AI tools.", "Concept systems · Campaign assets · Creative production"],
+  ["03", "Brand systems", "A coherent digital identity built to stay recognisable across web, social and campaigns.", "Positioning · Visual language · Digital guidelines"],
+  ["04", "Growth architecture", "Connected content, YouTube and marketing systems designed to support consistent progress.", "Content strategy · Channel packaging · Optimisation"],
+  ["05", "Social media management", "Structured social media planning, creative production and publishing support for brands that need a more consistent presence.", "Content planning · Creative direction · Publishing", instagramPortfolio],
 ];
 
-const loras = [
-  ["Launchpad Site", "Website design", "A focused, credible website for a new business or offer.", "New ventures", 1600, "4–6 weeks"],
-  ["Conversion Landing Page", "Website design", "A singular campaign page with a clear conversion journey.", "Campaigns", 950, "2–3 weeks"],
-  ["Experience Redesign", "Website design", "Reframe an existing site with sharper structure and direction.", "Established brands", 2200, "5–7 weeks"],
-  ["Responsive Frontend", "Website development", "Production-ready responsive implementation from approved design.", "Design teams", 1800, "3–6 weeks"],
-  ["CMS Foundation", "Website development", "An editable content structure for an evolving business website.", "Content-led brands", 1200, "2–4 weeks"],
-  ["Commerce Experience", "E-commerce", "A considered store structure and shopping experience.", "Online retailers", 2800, "6–9 weeks"],
-  ["Brand Signal", "Branding", "A compact visual direction for clear, consistent digital expression.", "New brands", 1200, "3–4 weeks"],
-  ["Digital Brand Kit", "Branding", "Practical identity rules and assets for everyday digital use.", "Growing teams", 750, "2–3 weeks"],
-  ["Content Engine", "AI content", "A repeatable, AI-assisted content planning and production workflow.", "Busy teams", 900, "2–3 weeks"],
-  ["Campaign Concepts", "AI content", "Creative territories, messaging angles and campaign starters.", "Marketing teams", 650, "1–2 weeks"],
-  ["Short-form Studio", "Video creative", "A repeatable direction for short-form video concepts and scripts.", "Creators & brands", 800, "2–3 weeks"],
-  ["Social System", "Social media", "Content pillars, formats and publishing logic for consistency.", "Service brands", 750, "2–3 weeks"],
-  ["Channel Blueprint", "YouTube", "Positioning, series architecture and a practical publishing roadmap.", "New channels", 850, "2–3 weeks"],
-  ["Video Packaging", "YouTube", "Title and thumbnail direction designed to improve content clarity.", "Active channels", 450, "1–2 weeks"],
-  ["Search Foundation", "SEO", "Technical and on-page essentials for a discoverable website.", "Business websites", 700, "2–3 weeks"],
-  ["Lead Journey", "Lead generation", "A clear pathway from first visit to qualified conversation.", "Service businesses", 800, "2–3 weeks"],
-  ["Conversion Review", "Conversion optimisation", "A focused review of friction, hierarchy and calls to action.", "Live websites", 500, "1–2 weeks"],
-  ["Workflow Map", "Automation", "Plan high-value marketing and content workflow automations.", "Scaling teams", 950, "2–4 weeks"],
-  ["Measurement Setup", "Analytics", "A practical measurement plan and core analytics configuration.", "Digital teams", 600, "1–2 weeks"],
-  ["Creative Sprint", "Creative strategy", "A fast strategic sprint to clarify one important growth challenge.", "Decision-makers", 550, "1 week"],
-] as const;
-
-const tiers = [
-  ["Foundation", "For a credible professional starting point", "From $1,600", ["Core website structure", "Essential pages", "Mobile-responsive design", "Basic conversion pathway"], "Complex integrations and ongoing campaigns"],
-  ["Growth", "For stronger positioning and marketing capability", "From $3,800", ["Strategic site architecture", "Creative direction", "Conversion-focused messaging", "AI-assisted content support"], "Custom platforms and high-volume production"],
-  ["Advanced", "For a connected digital growth system", "From $7,500", ["Advanced website experience", "Custom creative technology", "Content and campaign systems", "Workflow planning"], "Open-ended scope or dedicated embedded team"],
-  ["Bespoke", "For complex or high-volume requirements", "Scoped to brief", ["Fully tailored scope", "Advanced development", "Multi-platform delivery", "Dedicated project planning"], "Defined after discovery"],
-];
-
-const faqs = [
-  ["What are Loras?", "Loras are our selectable creative technology and AI service modules. Each module solves a focused need and can be combined with others into a practical project scope."],
-  ["Can I select more than one Lora—or up to 50?", "Yes. You can combine as many relevant modules as you need, up to 50. The current catalogue is curated and will expand; your selection is a discussion starter, not an order."],
-  ["Are the displayed prices final?", "No. Prices are indicative starting points. Final scope and quotation depend on your requirements, complexity, content, integrations, revisions and support needs."],
-  ["Can I request a custom package?", "Absolutely. Share your goals, budget range and existing digital assets, and we will recommend a focused combination or a bespoke scope."],
-  ["Do you provide website redesigns?", "Yes. We can review structure, visual direction, messaging, mobile usability and conversion pathways, then recommend the right level of redesign."],
-  ["Do you work with businesses without a website?", "Yes. Foundation projects are specifically suited to new businesses, focused launches and teams building their first credible digital home."],
-  ["Do you guarantee YouTube growth?", "No. Growth varies by niche, content quality, audience behaviour and publishing consistency. Our work is designed to support better positioning, packaging and execution."],
-  ["How long does a typical project take?", "Focused modules may take one to three weeks. Websites commonly take four to nine weeks. More complex systems are planned after discovery."],
-  ["Can you work with our existing brand?", "Yes. We can work within your existing guidelines, evolve your current direction or help establish a clearer digital brand system."],
-  ["Do you provide ongoing support?", "Yes. Ongoing optimisation, content and creative support can be discussed once we understand the pace and capacity your business needs."],
-  ["Do I need to pay online?", "No. We do not process payments through this website. We first clarify scope, deliverables, quotation, terms and next steps with you directly."],
-  ["How do I start?", "Explore the services, select relevant Loras or choose a portfolio standard, then send us a WhatsApp message. We will help turn your idea into a practical scope."],
+const projects = [
+  { number: "A—01", category: "Website systems", title: "A sharper digital first impression.", description: "A focused web direction for service businesses that need clarity, credibility and an easier way for prospects to start a conversation.", tags: ["Positioning", "Interface design", "Development"], visual: "interface", externalUrl: undefined, externalLabel: undefined, socialHandle: undefined },
+  { number: "A—02", category: "AI creative", title: "One idea, built into a working visual language.", description: "Creative direction that turns AI-assisted exploration into consistent campaign assets rather than disconnected outputs.", tags: ["Art direction", "AI production", "Campaign systems"], visual: "signal", externalUrl: undefined, externalLabel: undefined, socialHandle: undefined },
+  { number: "A—03", category: "Content growth", title: "A repeatable system for earning attention.", description: "Channel positioning, content packaging and publishing guidance designed to help brands build momentum over time.", tags: ["YouTube strategy", "Titles & thumbnails", "Review"], visual: "channel", externalUrl: undefined, externalLabel: undefined, socialHandle: undefined },
+  { number: "A—04", category: "Social Media Management", title: "Altivon SG — a considered social presence.", description: "An active portfolio example showing social content presentation, brand consistency and ongoing channel management.", tags: ["Content planning", "Creative direction", "Publishing"], visual: "social", externalUrl: instagramPortfolio, externalLabel: "View Altivon SG on Instagram", socialHandle: "@altivonsg" },
+  { number: "A—05", category: "Social Media Management", title: "Yuna Pie XO — social content with character.", description: "A client portfolio example presenting an active social feed, creative content direction and consistent channel management.", tags: ["Social content", "Creative direction", "Channel management"], visual: "social", externalUrl: "https://www.instagram.com/yunapiexo/", externalLabel: "View Yuna Pie XO on Instagram", socialHandle: "@yunapiexo" },
+  { number: "A—06", category: "Social Media Management", title: "Hananorii — a cohesive social identity.", description: "A client portfolio example showing coordinated visual presentation and an ongoing approach to social media content.", tags: ["Visual consistency", "Content planning", "Publishing"], visual: "social", externalUrl: "https://www.instagram.com/hananorii.real/", externalLabel: "View Hananorii on Instagram", socialHandle: "@hananorii.real" },
 ];
 
 export default function Home() {
-  const [menu, setMenu] = useState(false);
-  const [category, setCategory] = useState("All");
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const root = useRef<HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const categories = ["All", ...Array.from(new Set(loras.map((l) => l[1])))];
-  const filtered = loras.filter((l) => (category === "All" || l[1] === category) && `${l[0]} ${l[1]} ${l[2]}`.toLowerCase().includes(query.toLowerCase()));
-  const total = useMemo(() => loras.filter((l) => selected.includes(l[0])).reduce((sum, l) => sum + l[4], 0), [selected]);
-  const toggle = (name: string) => setSelected((s) => s.includes(name) ? s.filter((x) => x !== name) : s.length < 50 ? [...s, name] : s);
-  const selectionMessage = `Hi, I would like to discuss the following selected services:\n${selected.map((s) => `• ${s}`).join("\n")}\n\nMy business/project is:`;
-  const formSubmit = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setSubmitted(true); };
 
-  return <main>
-    <header className="navWrap">
-      <nav className="nav shell">
-        <a className="brand" href="#top" aria-label="VTCSocial home"><span className="brandMark">V</span> VTCSOCIAL</a>
-        <div className={`navLinks ${menu ? "open" : ""}`}><a onClick={()=>setMenu(false)} href="#services">Services</a><a onClick={()=>setMenu(false)} href="#loras">Loras</a><a onClick={()=>setMenu(false)} href="#work">Portfolio</a><a onClick={()=>setMenu(false)} href="#youtube">YouTube</a><a onClick={()=>setMenu(false)} href="#process">Process</a><a onClick={()=>setMenu(false)} href="#faqs">FAQs</a></div>
-        <a className="btn btnSmall navCta" href={wa("Hi, I found your website and would like to discuss an AI-powered digital marketing or creative technology project.")} target="_blank" rel="noreferrer">Chat on WhatsApp <span>↗</span></a>
-        <button className="menuBtn" onClick={()=>setMenu(!menu)} aria-label="Toggle menu" aria-expanded={menu}><span/><span/></button>
-      </nav>
-    </header>
+  useGSAP(() => {
+    gsap.from(".hero-reveal", { yPercent: 110, opacity: 0, duration: 1.1, stagger: 0.09, ease: "power4.out" });
+    gsap.from(".hero-shell", { opacity: 0, duration: 1.7, ease: "power3.out" });
+    gsap.utils.toArray<HTMLElement>(".reveal-section").forEach((section) => {
+      gsap.from(section, { y: 70, opacity: 0, duration: 0.9, ease: "power3.out", scrollTrigger: { trigger: section, start: "top 84%" } });
+    });
+    gsap.utils.toArray<HTMLElement>(".project-visual").forEach((visual) => {
+      gsap.fromTo(visual, { scale: 0.92 }, { scale: 1, ease: "none", scrollTrigger: { trigger: visual, start: "top bottom", end: "bottom top", scrub: 1 } });
+    });
+    return () => ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+  }, { scope: root });
 
-    <section id="top" className="hero shell">
-      <div className="heroCopy">
-        <div className="eyebrow"><i /> AI-powered creative technology partner</div>
-        <h1>Build a digital presence that <em>moves business.</em></h1>
-        <p>We combine sharp strategy, high-quality website development and AI-assisted creative systems to help modern businesses turn attention into opportunity.</p>
-        <div className="heroActions"><a className="btn" href={wa("Hi, I’m interested in your AI-powered digital marketing and creative technology services. I would like to discuss my project.")} target="_blank" rel="noreferrer">Discuss your project <span>↗</span></a><a className="textLink" href="#work">View selected work <span>↓</span></a></div>
-        <div className="heroNote"><span>01</span><p>From your first website to a complete digital growth system.</p></div>
-      </div>
-      <div className="heroVisual" aria-label="Creative technology project preview">
-        <div className="orb orbOne"/><div className="orb orbTwo"/>
-        <div className="studioCard"><div className="windowBar"><span/><span/><span/><b>VTCS / PROJECT_024</b></div><div className="screen"><div className="screenTag">LAUNCHING / DIGITAL EXPERIENCE</div><div className="screenTitle">Turn ideas<br/>into <i>impact.</i></div><div className="screenGrid"><span>STRATEGY</span><span>DESIGN</span><span>AI SYSTEMS</span></div></div></div>
-        <div className="floatCard floatOne"><span>CONNECTED CAPABILITIES</span><strong>06</strong><i>Web · Content · Growth</i></div><div className="floatCard floatTwo"><span>CREATIVE SIGNAL</span><strong>HUMAN + AI</strong><i>Built with judgement</i></div>
-      </div>
-    </section>
+  const submitBrief = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSubmitted(true); };
 
-    <section className="trustStrip"><div className="shell"><p>Built for businesses that care about</p><div><span>QUALITY</span><span>CLARITY</span><span>PROGRESS</span><span>PARTNERSHIP</span></div></div></section>
+  const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
+    root.current?.style.setProperty("--cursor-x", `${event.clientX}px`);
+    root.current?.style.setProperty("--cursor-y", `${event.clientY}px`);
+  };
 
-    <section className="light section" id="services"><div className="shell">
-      <div className="sectionHead"><div><span className="sectionNo">02 / CAPABILITIES</span><h2>One partner.<br/><em>A connected digital system.</em></h2></div><p>Strategy, design, content and technology work better when they move in the same direction. Start focused, then build the system your next stage needs.</p></div>
-      <div className="serviceGrid">{services.map((s)=><article className="serviceCard" key={s[0]}><span className="cardNo">{s[0]}</span><h3>{s[1]}</h3><p>{s[2]}</p><div className="deliverable">{s[3]}</div><a href={wa(`Hi, I’m interested in your ${s[1].toLowerCase()} services. I would like to discuss my business and requirements.`)} target="_blank" rel="noreferrer">Discuss this service <b>↗</b></a></article>)}</div>
-    </div></section>
+  const moveHero = (event: ReactPointerEvent<HTMLElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+    event.currentTarget.style.setProperty("--light-x", `${x}%`);
+    event.currentTarget.style.setProperty("--light-y", `${y}%`);
+    event.currentTarget.style.setProperty("--reveal-x", `${x}%`);
+    event.currentTarget.style.setProperty("--reveal-y", `${y}%`);
+    event.currentTarget.style.setProperty("--reveal-opacity", "1");
+    event.currentTarget.style.setProperty("--field-opacity", "1");
+  };
 
-    <section className="dark section" id="loras"><div className="shell">
-      <div className="sectionHead inverse"><div><span className="sectionNo">03 / LORA CATALOGUE</span><h2>Build your own<br/><em>starting point.</em></h2></div><p>Loras are focused creative technology modules. Browse, compare and combine them into a project brief—then talk it through with us before making any decision.</p></div>
-      <div className="catalogueToolbar"><label className="search"><span>⌕</span><input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search the catalogue" aria-label="Search Loras"/></label><span className="resultCount">{filtered.length} MODULES</span></div>
-      <div className="filters" aria-label="Filter by category">{categories.map((c)=><button key={c} onClick={()=>setCategory(c)} className={category===c?"active":""}>{c}</button>)}</div>
-      <div className="loraLayout"><div className="loraGrid">{filtered.map((l)=><article className={`loraCard ${selected.includes(l[0])?"selected":""}`} key={l[0]}><div className="loraTop"><span>{l[1]}</span><button onClick={()=>toggle(l[0])} aria-label={`${selected.includes(l[0])?"Remove":"Select"} ${l[0]}`}>{selected.includes(l[0])?"✓":"+"}</button></div><h3>{l[0]}</h3><p>{l[2]}</p><dl><div><dt>IDEAL FOR</dt><dd>{l[3]}</dd></div><div><dt>FROM</dt><dd>${l[4].toLocaleString()}</dd></div><div><dt>EST. TIMELINE</dt><dd>{l[5]}</dd></div></dl><a href={wa(`Hi, I’m interested in the ${l[0]} Lora. I would like to discuss my requirements.`)} target="_blank" rel="noreferrer">Ask about this Lora ↗</a></article>)}</div>
-      <aside className="selection"><div><span>YOUR SELECTION</span><strong>{String(selected.length).padStart(2,"0")}</strong></div>{selected.length? <ul>{selected.map(s=><li key={s}>{s}<button onClick={()=>toggle(s)} aria-label={`Remove ${s}`}>×</button></li>)}</ul>:<p>Select modules to build a consultation brief. You can choose up to 50.</p>}<div className="estimate"><span>INDICATIVE STARTING TOTAL</span><b>{total?`$${total.toLocaleString()}`:"—"}</b></div><a className={`btn ${!selected.length?"disabled":""}`} href={selected.length?wa(selectionMessage):undefined} target="_blank" rel="noreferrer">Send selection <span>↗</span></a><a className="recommend" href={wa("Hi, I would like a personalised recommendation for my business and project.")} target="_blank" rel="noreferrer">Request a recommendation</a></aside></div>
-      <p className="disclaimer">Displayed prices are starting prices or indicative ranges. Final scope and quotation depend on your requirements. This selector is for discovery and consultation only—no payment is processed here.</p>
-    </div></section>
+  return (
+    <main ref={root} className="site-main" id="top" onPointerMove={trackPointer}>
+      <div className="cursor-aura" aria-hidden="true" />
+      <a className="skip-link" href="#profile">Skip to content</a>
+      <header className="topbar">
+        <nav className="nav-shell" aria-label="Primary navigation">
+          <a className="wordmark" href="#top" aria-label="VTCSocial home">VTC<span>®</span></a>
+          <div className={`nav-links ${menuOpen ? "is-open" : ""}`}>
+            <a href="#profile" onClick={() => setMenuOpen(false)}>Profile</a>
+            <a href="#capabilities" onClick={() => setMenuOpen(false)}>Expertise</a>
+            <a href="#work" onClick={() => setMenuOpen(false)}>Selected work</a>
+            <a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a>
+          </div>
+          <a className="nav-contact" href={whatsApp("Hi, I found your portfolio and would like to discuss a creative technology project.")} target="_blank" rel="noreferrer">Available for projects <i /></a>
+          <button className="menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle navigation"><span /><span /></button>
+        </nav>
+      </header>
 
-    <section className="light section" id="pricing"><div className="shell">
-      <div className="sectionHead"><div><span className="sectionNo">04 / LEVELS OF PARTNERSHIP</span><h2>Choose the depth,<br/><em>not just a package.</em></h2></div><p>Not every business needs the same level of strategy, design or technical complexity. These levels make the differences clearer before we tailor your scope.</p></div>
-      <div className="tierGrid">{tiers.map((t,i)=><article className={`tierCard ${i===1?"featured":""}`} key={t[0]}>{i===1&&<span className="popular">MOST SELECTED</span>}<span className="tierNo">0{i+1}</span><h3>{t[0]}</h3><p className="tierFor">{t[1]}</p><strong>{t[2]}</strong><h4>INCLUDED</h4><ul>{t[3].map(x=><li key={x}>↗ {x}</li>)}</ul><h4>NOT INCLUDED</h4><p className="notIncluded">{t[4]}</p><a href={wa(`Hi, I’m interested in the ${t[0]} service level. I would like to discuss the right scope for my business.`)} target="_blank" rel="noreferrer">Explore {t[0]} <b>↗</b></a></article>)}</div>
-      <p className="pricingNote">Pricing is indicative and may vary based on project complexity, number of pages, integrations, content requirements, revisions and ongoing support.</p>
-    </div></section>
+      <section className="hero" aria-labelledby="hero-title" onPointerMove={moveHero} onPointerEnter={moveHero}>
+        <div className="hero-shell" role="img" aria-label="Cybernetic obsidian portrait of the VTCSocial creative technologist" />
+        <div className="hero-face-reveal" aria-hidden="true" />
+        <div className="hero-pointer-field" aria-hidden="true" />
+        <div className="hero-aperture-frame" aria-hidden="true"><i /><i /><b /></div>
+        <div className="hero-vignette" /><div className="hero-grid" aria-hidden="true" />
+        <div className="hero-copy">
+          <p className="eyebrow hero-reveal">AI creative technologist · Digital strategist</p>
+          <div className="hero-title-mask"><h1 id="hero-title" className="hero-reveal">Ideas built<br />for the <em>future.</em></h1></div>
+          <p className="hero-intro hero-reveal">I design intelligent websites, brand systems and content engines for businesses ready to build a more distinct digital presence.</p>
+          <div className="hero-actions hero-reveal">
+            <a className="primary-button" href={whatsApp("Hi, I would like to discuss a website, brand or AI creative project with VTCSocial.")} target="_blank" rel="noreferrer">Start a conversation <span>↗</span></a>
+            <a className="text-link" href="#work">View selected work <span>↓</span></a>
+          </div>
+        </div>
+        <div className="hero-meta hero-reveal"><span>Portfolio / 2026</span><span>Strategy · Design · AI</span></div>
+        <p className="reveal-hint"><i /> Trace the shell to reveal the human layer</p>
+        <div className="scroll-cue"><span>Scroll to explore</span><i /></div>
+      </section>
 
-    <section className="work section" id="work"><div className="shell">
-      <div className="sectionHead inverse"><div><span className="sectionNo">05 / WEBSITE PORTFOLIO</span><h2>See the standard<br/><em>you can expect.</em></h2></div><p>Portfolio work will only appear here when approved for publication. Until then, these transparent scope studies show how creative depth and technical execution change by service level.</p></div>
-      <div className="workGrid">
-        <article className="project projectA"><div className="projectVisual"><span>FOUNDATION / SCOPE STUDY</span><div className="mockBrowser"><i/><i/><i/><b>Focused clarity<br/>for a new launch.</b><small>STRATEGY · DESIGN · BUILD</small></div></div><div className="projectCopy"><span>NEW BUSINESS / FOCUSED LAUNCH</span><h3>Professional essentials, expressed with confidence.</h3><p>Lean information architecture, strong mobile experience and one clear conversation pathway.</p><a href={wa("Hi, I would like to discuss a website similar to your Foundation scope study.")} target="_blank" rel="noreferrer">Discuss a similar project ↗</a></div></article>
-        <article className="project projectB"><div className="projectVisual"><span>ADVANCED / SCOPE STUDY</span><div className="dataArt"><b>CONNECTED<br/><em>GROWTH</em></b><i/><i/><i/></div></div><div className="projectCopy"><span>ESTABLISHED BRAND / CONNECTED SYSTEM</span><h3>Custom experience with integrated marketing thinking.</h3><p>Deeper content architecture, distinctive creative direction, custom interactions and connected campaign systems.</p><a href={wa("Hi, I would like to discuss a website similar to your Advanced scope study.")} target="_blank" rel="noreferrer">Discuss a similar project ↗</a></div></article>
-      </div>
-      <div className="qualityTable"><div><b>SERVICE LEVEL</b><b>BEST SUITED FOR</b><b>TYPICAL FOCUS</b></div>{tiers.map(t=><div key={t[0]}><strong>{t[0]}</strong><span>{t[1]}</span><span>{t[3].slice(0,2).join(" · ")}</span></div>)}</div>
-    </div></section>
+      <div className="signal-strip" aria-label="Core disciplines"><div>{["CREATIVE TECHNOLOGY", "DIGITAL EXPERIENCES", "AI SYSTEMS", "BRAND DIRECTION", "CONTENT GROWTH", "CREATIVE TECHNOLOGY", "DIGITAL EXPERIENCES"].map((item, index) => <span key={`${item}-${index}`}>{item}<i>✦</i></span>)}</div></div>
 
-    <section className="youtube section" id="youtube"><div className="shell youtubeGrid">
-      <div><span className="sectionNo">06 / YOUTUBE GROWTH</span><h2>Build momentum<br/><em>with intention.</em></h2><p>Channel strategy, packaging and optimisation designed to support a stronger, more consistent presence over time.</p><div className="ytChecks"><span>CHANNEL POSITIONING</span><span>CONTENT ARCHITECTURE</span><span>TITLES & THUMBNAILS</span><span>PERFORMANCE REVIEW</span></div><a className="btn" href={wa("Hi, I’m interested in your YouTube growth services. I would like to discuss my channel and goals.")} target="_blank" rel="noreferrer">Discuss your channel <span>↗</span></a></div>
-      <div className="ytPanel"><div className="ytPanelHead"><span>SELECTED CHANNEL VIEW</span><i>VERIFIED DATA ONLY</i></div><div className="chart"><div className="chartEmpty"><b>YOUR CHANNEL</b><span>Growth case studies will appear here only with client approval and substantiated metrics.</span></div><i style={{height:"22%"}}/><i style={{height:"34%"}}/><i style={{height:"30%"}}/><i style={{height:"48%"}}/><i style={{height:"59%"}}/><i style={{height:"73%"}}/></div><div className="metricRow"><div><span>TIME PERIOD</span><b>Defined per case study</b></div><div><span>MEASUREMENT</span><b>Substantiated metrics</b></div></div><p>Growth varies by niche, content quality, audience behaviour and publishing consistency. Results are not guaranteed.</p></div>
-    </div></section>
+      <section className="profile section-shell reveal-section" id="profile">
+        <div className="section-index"><span>01</span><p>Profile</p></div>
+        <div className="profile-copy">
+          <p className="profile-lead">Creative technology that turns attention into <em>opportunity.</em></p>
+          <div className="profile-columns"><p>I work at the intersection of strategy, design and AI—building digital experiences that look considered, communicate clearly and support real business goals.</p><p>Every engagement begins with context. I study the audience, the offer and the existing digital landscape before recommending the right website, content or growth system.</p></div>
+        </div>
+        <aside className="profile-dossier"><span>Current focus</span><dl>
+          <div><dt>Discipline</dt><dd>Creative technology</dd></div><div><dt>Specialism</dt><dd>Web + AI systems</dd></div><div><dt>Working with</dt><dd>Brands · founders · teams</dd></div><div><dt>Availability</dt><dd className="available">Selected projects</dd></div>
+        </dl></aside>
+      </section>
 
-    <section className="light section process" id="process"><div className="shell"><div className="sectionHead"><div><span className="sectionNo">07 / THE PROCESS</span><h2>From idea to<br/><em>practical scope.</em></h2></div><p>Start with an idea, a service selection or a portfolio standard. We will help you turn it into a clear, realistic project plan.</p></div><div className="steps">{[["01","Explore","Browse services and scope studies."],["02","Select","Choose Loras or describe your project."],["03","Connect","Message us directly on WhatsApp."],["04","Shape","Receive a tailored recommendation."],["05","Begin","Approve the scope and get started."]].map(s=><article key={s[0]}><span>{s[0]}</span><h3>{s[1]}</h3><p>{s[2]}</p></article>)}</div></div></section>
+      <section className="capabilities section-shell" id="capabilities">
+        <div className="section-heading reveal-section"><div className="section-index"><span>02</span><p>Expertise</p></div><h2>A multidisciplinary practice for a changing digital world.</h2></div>
+        <div className="capability-list">{capabilities.map((item) => <article key={item[0]} className="capability-row reveal-section"><span>{item[0]}</span><h3>{item[1]}</h3><p>{item[2]}</p><small>{item[3]}{item[4] && <a href={item[4]} target="_blank" rel="noreferrer">View Instagram portfolio ↗</a>}</small><a href={whatsApp(`Hi, I’m interested in your ${item[1].toLowerCase()} work and would like to discuss a project.`)} target="_blank" rel="noreferrer" aria-label={`Discuss ${item[1]}`}>↗</a></article>)}</div>
+      </section>
 
-    <section className="why section"><div className="shell whyGrid"><div><span className="sectionNo">08 / WHY VTCSOCIAL</span><h2>Technology,<br/><em>with judgement.</em></h2><p>AI improves our process—it does not replace strategic thinking, craft or a real understanding of your business.</p></div><div className="whyList">{["Modular services let you begin with a focused need.","Website and content work connect through one growth approach.","Portfolio standards make scope and quality easier to compare.","You speak directly with the team before committing.","Recommendations reflect your goals, audience, budget and assets.","Every system is designed to be practical, clear and scalable."].map((x,i)=><div key={x}><span>0{i+1}</span><p>{x}</p></div>)}</div></div></section>
+      <section className="work" id="work">
+        <div className="section-shell work-heading reveal-section"><div className="section-index"><span>03</span><p>Selected work</p></div><div><h2>Systems, not surface decoration.</h2><p>These scope studies show the kind of thinking and execution available. Client work and performance data are published only with permission.</p></div></div>
+        <div className="project-list section-shell">{projects.map((project) => <article className="project reveal-section" key={project.number}>
+          <div className={`project-visual ${project.visual}`}><span className="visual-code">{project.number}</span>
+            {project.visual === "interface" && <div className="interface-window"><div className="window-bar"><i/><i/><i/></div><p>Digital presence<br/><em>with purpose.</em></p><span>Strategy / Experience / Build</span></div>}
+            {project.visual === "signal" && <div className="signal-core"><i/><i/><i/><b>VTC</b></div>}
+            {project.visual === "channel" && <div className="channel-grid"><i/><i/><i/><i/><b>Content<br/>system</b></div>}
+            {project.visual === "social" && <div className="social-window"><span>{project.socialHandle}</span><b>Social media<br/><em>with intent.</em></b><small>Content · Direction · Management</small></div>}
+          </div>
+          <div className="project-copy"><div><span>{project.number}</span><small>{project.category}</small></div><h3>{project.title}</h3><p>{project.description}</p><ul>{project.tags.map((tag) => <li key={tag}>{tag}</li>)}</ul><div className="project-links">{project.externalUrl && <a href={project.externalUrl} target="_blank" rel="noreferrer">{project.externalLabel} <span>↗</span></a>}<a href={whatsApp(`Hi, I would like to discuss a project similar to your ${project.category.toLowerCase()} work.`)} target="_blank" rel="noreferrer">Discuss a similar project <span>↗</span></a></div></div>
+        </article>)}</div>
+      </section>
 
-    <section className="light section" id="faqs"><div className="shell faqGrid"><div><span className="sectionNo">09 / FAQ</span><h2>Good questions,<br/><em>clear answers.</em></h2><p>Still deciding where to begin? Send us a message and we will point you toward a practical starting point.</p><a className="inkLink" href={wa("Hi, I have a question about your services and would like some guidance.")} target="_blank" rel="noreferrer">Ask us on WhatsApp ↗</a></div><div className="faqList">{faqs.map((f,i)=><article key={f[0]} className={openFaq===i?"open":""}><button onClick={()=>setOpenFaq(openFaq===i?null:i)} aria-expanded={openFaq===i}><span>{f[0]}</span><b>{openFaq===i?"−":"+"}</b></button>{openFaq===i&&<p>{f[1]}</p>}</article>)}</div></div></section>
+      <section className="principles section-shell reveal-section">
+        <div className="section-index"><span>04</span><p>Approach</p></div>
+        <div className="principle-statement"><p>AI should expand the creative process—<em>not replace judgement.</em></p><span>I use technology to explore faster, test more directions and build stronger systems. The final decisions remain grounded in audience, context and craft.</span></div>
+        <ol><li><span>01</span><b>Discover</b><p>Clarify the goal, audience and current position.</p></li><li><span>02</span><b>Define</b><p>Shape the scope, direction and practical priorities.</p></li><li><span>03</span><b>Create</b><p>Design, build and refine the agreed system.</p></li><li><span>04</span><b>Deploy</b><p>Launch with a clear path for iteration and growth.</p></li></ol>
+      </section>
 
-    <section className="brief section"><div className="shell briefGrid"><div><span className="sectionNo">10 / PROJECT BRIEF</span><h2>Prefer to send<br/><em>the details first?</em></h2><p>Share a concise brief. We will review it, then continue the conversation directly.</p></div>{submitted?<div className="success"><span>✓</span><h3>Thank you. We have received your project details.</h3><p>For the fastest response, message us directly on WhatsApp.</p><a className="btn" href={wa("Hi, I just submitted my project details on the VTCSocial website and would like to continue the conversation.")} target="_blank" rel="noreferrer">Continue on WhatsApp <span>↗</span></a></div>:<form onSubmit={formSubmit}><div className="fieldRow"><label>Name<input required name="name" placeholder="Your name"/></label><label>Business name<input name="business" placeholder="Business or brand"/></label></div><div className="fieldRow"><label>WhatsApp number<input required name="phone" placeholder="Country code + number"/></label><label>Business type<input name="type" placeholder="e.g. Consultancy"/></label></div><label>Services of interest<select name="service" defaultValue=""><option value="" disabled>Select a focus</option>{services.map(s=><option key={s[1]}>{s[1]}</option>)}</select></label><div className="fieldRow"><label>Website URL<input name="website" placeholder="Optional"/></label><label>YouTube URL<input name="youtube" placeholder="Optional"/></label></div><label>Project range<select name="range" defaultValue=""><option value="" disabled>Select a range</option><option>$1,500–$4,000</option><option>$4,000–$8,000</option><option>$8,000+</option><option>Not sure yet</option></select></label><label>Project description<textarea required name="description" placeholder="What are you trying to build, improve or grow?"/></label><button className="btn" type="submit">Send project brief <span>↗</span></button><small>No payment is processed. Your details are used only to discuss your project.</small></form>}</div></section>
+      <section className="contact" id="contact">
+        <div className="contact-orb" aria-hidden="true" />
+        <div className="contact-copy reveal-section"><p className="eyebrow">Have a project in mind?</p><h2>Let’s build what<br />comes <em>next.</em></h2><p>Tell me what you are trying to build, improve or grow. I’ll review the context and recommend a practical starting point.</p><a className="primary-button light" href={whatsApp("Hi, I found your website and would like to discuss an AI-powered digital marketing or creative technology project. My business is: [Business name]. My project goals are: [Brief description].")} target="_blank" rel="noreferrer">Message on WhatsApp <span>↗</span></a><div className="direct-contact-links"><a href="mailto:vtcsmm@gmail.com">vtcsmm@gmail.com</a><a href={`https://wa.me/${whatsAppNumber}`} target="_blank" rel="noreferrer">+65 8995 0821</a><a href={personalInstagram} target="_blank" rel="noreferrer">Instagram · @k4.yden</a></div></div>
+        <div className="brief-panel reveal-section">{submitted ? <div className="success-state"><span>Brief received</span><h3>Thank you.</h3><p>For the fastest response, continue directly on WhatsApp.</p><a href={whatsApp("Hi, I just submitted my project brief and would like to continue the conversation.")} target="_blank" rel="noreferrer">Continue on WhatsApp ↗</a></div> : <form onSubmit={submitBrief}>
+          <div><label htmlFor="name">Name</label><input id="name" name="name" required /></div><div><label htmlFor="business">Business</label><input id="business" name="business" /></div>
+          <div className="wide"><label htmlFor="interest">Area of interest</label><select id="interest" name="interest" defaultValue=""><option value="" disabled>Select one</option><option>Website or redesign</option><option>AI creative direction</option><option>Brand system</option><option>Content or YouTube growth</option><option>Custom project</option></select></div>
+          <div className="wide"><label htmlFor="brief">What are you trying to build?</label><textarea id="brief" name="brief" required /></div><button type="submit">Send project details <span>↗</span></button><small>No online payment. Scope and quotation are discussed directly.</small>
+        </form>}</div>
+      </section>
 
-    <section className="finalCta"><div className="shell"><span className="sectionNo">LET’S START A CONVERSATION</span><h2>Let’s build the right digital system for <em>your business.</em></h2><p>Tell us what you are trying to build, improve or grow. We will review your needs and recommend a practical starting point.</p><div><a className="btn" href={wa("Hi, I found your website and would like to discuss an AI-powered digital marketing or creative technology project.\n\nHere is what I am interested in:\nMy business is:\nMy project goals are:")} target="_blank" rel="noreferrer">Start a WhatsApp conversation <span>↗</span></a><a className="textLink" href="#work">Browse the portfolio again ↑</a></div></div></section>
-
-    <footer><div className="shell"><div><a className="brand" href="#top"><span className="brandMark">V</span> VTCSOCIAL</a><p>AI-powered growth systems for modern businesses.</p></div><div><span>EXPLORE</span><a href="#services">Services</a><a href="#loras">Loras</a><a href="#work">Portfolio</a><a href="#faqs">FAQs</a></div><div><span>START HERE</span><a href={wa("Hi, I would like to discuss a project with VTCSocial.")} target="_blank" rel="noreferrer">WhatsApp ↗</a><a href="#brief">Project brief</a></div></div><div className="footerBottom shell"><span>© 2026 VTCSOCIAL</span><span>STRATEGY · DESIGN · AI · GROWTH</span></div></footer>
-  </main>;
+      <footer><a className="wordmark" href="#top">VTC<span>®</span></a><p>Creative technology for modern businesses.</p><div><a href="mailto:vtcsmm@gmail.com">Email</a><a href={`https://wa.me/${whatsAppNumber}`} target="_blank" rel="noreferrer">WhatsApp</a><a href={personalInstagram} target="_blank" rel="noreferrer">Instagram</a><a href="#work">Work</a></div><span>© 2026 VTCSocial · All rights reserved</span></footer>
+    </main>
+  );
 }

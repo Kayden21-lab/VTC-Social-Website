@@ -40,3 +40,11 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# local agent tooling
+/.agents/
+/skills-lock.json
+
+# private design source references (keep local)
+/public/images/hero-style-reference.jpg
+/public/images/portrait-reference.jpg
