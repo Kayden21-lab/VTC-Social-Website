@@ -6,8 +6,8 @@ import "@fontsource/outfit/500.css";
 import "@fontsource/outfit/600.css";
 import "./globals.css";
 
-const title = "VTCSocial — AI Creative Technologist";
-const description = "A futuristic portfolio for digital experiences, AI creative direction, brand systems and growth architecture.";
+const title = "VTCSocial | Creative Technology";
+const description = "Web, social and creative systems for modern brands.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description,
-    openGraph: { title, description, type: "website", images: [{ url: image, width: 1200, height: 630, alt: "VTCSocial — AI Creative Technologist" }] },
+    openGraph: { title, description, type: "website", images: [{ url: image, width: 1200, height: 630, alt: "VTCSocial creative technology portfolio" }] },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
