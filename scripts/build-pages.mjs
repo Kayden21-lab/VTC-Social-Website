@@ -34,6 +34,7 @@ const renderRoute = async (pathname, destination) => {
 const rebase = (content) => content
   .replaceAll("/_next/", `${basePath}/_next/`)
   .replaceAll("/images/", `${basePath}/images/`)
+  .replaceAll("/media/", `${basePath}/media/`)
   .replaceAll('content="/og.png"', `content="${basePath}/og.png"`)
   .replaceAll("http://localhost:3000/og.png", `${publicBaseUrl}/og.png`);
 
@@ -49,7 +50,10 @@ const rewriteTextAssets = async (directory) => {
 };
 
 const homeHtml = await renderRoute("/", "index.html");
+await renderRoute("/advertisements", "advertisements/index.html");
+await renderRoute("/modeling-photography", "modeling-photography/index.html");
 await renderRoute("/social-media-management", "social-media-management/index.html");
+await renderRoute("/website-management", "website-management/index.html");
 await writeFile(join(outputDirectory, "404.html"), homeHtml);
 await writeFile(join(outputDirectory, ".nojekyll"), "");
 await rewriteTextAssets(outputDirectory);

@@ -15,9 +15,9 @@ const services = [
   {
     name: "Advertisements",
     description: "Campaign ideas and creative assets designed to earn attention.",
-    action: "Discuss advertising",
-    href: whatsApp("Hi, I am interested in advertisement creative and campaign support."),
-    external: true,
+    action: "View advertisements",
+    href: "advertisements",
+    external: false,
     className: "advertising",
   },
   {
@@ -29,11 +29,11 @@ const services = [
     className: "social-management",
   },
   {
-    name: "Web & Creative Technology",
-    description: "Websites, brand systems and AI-assisted creative production.",
-    action: "Discuss a project",
-    href: whatsApp("Hi, I am interested in web and creative technology services."),
-    external: true,
+    name: "Website Management",
+    description: "Websites, updates and digital support for growing brands.",
+    action: "View website clients",
+    href: "website-management",
+    external: false,
     className: "creative-tech",
   },
 ];
